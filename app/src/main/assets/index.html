@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Free online alarm clock that only stops when you solve math puzzles and play memory games. Wake up for real with WakeUp.">
+<meta name="theme-color" content="#e8590c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>WakeUp – Challenge Alarm Clock</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f1ea;--card:#fff;--ink:#1d1b16;--mute:#6f6a5e;--acc:#e8590c;--acc2:#2b8a3e;--bad:#c92a2a;--line:#e3ddcf;--tile:#efe9db}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14130f;--card:#1f1d17;--ink:#f3efe4;--mute:#a49e8e;--acc:#ff8a3d;--acc2:#51cf66;--bad:#ff6b6b;--line:#35322a;--tile:#2a2720}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14130f;--card:#1f1d17;--ink:#f3efe4;--mute:#a49e8e;--acc:#ff8a3d;--acc2:#51cf66;--bad:#ff6b6b;--line:#35322a;--tile:#2a2720}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:22px;margin:0}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+.ghost{background:var(--tile);padding:8px 12px;border-radius:10px}
+.clock{text-align:center;margin:22px 0 14px}
+.time{font-size:64px;font-weight:700;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.date{color:var(--mute)}
+.next{margin-top:6px;color:var(--acc);font-weight:600;min-height:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=time],input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=time]{font-size:26px;font-weight:700}
+.days{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.day{width:44px;height:40px;border-radius:20px;background:var(--tile);font-size:13px}
+.day.on{background:var(--acc);color:#fff}
+.primary{background:var(--acc);color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;width:100%;margin-top:6px}
+.al{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.al:last-child{border:0}
+.al .t{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.al .m{color:var(--mute);font-size:13px}
+.al.off .t{opacity:.4}
+.sw{width:50px;height:28px;border-radius:20px;background:var(--tile);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px #0004}
+.sw.on{background:var(--acc2)}.sw.on::after{left:25px}
+.del{background:none;color:var(--bad);font-size:20px;padding:4px 8px}
+.empty{color:var(--mute);text-align:center;padding:14px 0}
+.hint{color:var(--mute);font-size:13px;line-height:1.6;margin-top:14px}
+label{font-size:14px;color:var(--mute)}
+#ring{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 30px}
+#ring.show{display:block}
+#ring.pulse::before{content:"";position:fixed;inset:0;background:var(--bad);opacity:0;animation:fl 1s infinite;pointer-events:none}
+@keyframes fl{50%{opacity:.14}}
+.rin{max-width:480px;margin:0 auto;position:relative}
+.big{text-align:center;font-size:22px;font-weight:700;color:var(--bad);margin:6px 0}
+.dots{display:flex;gap:8px;justify-content:center;margin:10px 0 18px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--tile)}.dot.done{background:var(--acc2)}.dot.cur{background:var(--acc)}
+.q{font-size:46px;font-weight:700;text-align:center;margin:18px 0;font-variant-numeric:tabular-nums}
+.ans{font-size:30px;width:100%;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.tile{aspect-ratio:1;border-radius:16px;background:var(--tile);font-size:30px;font-weight:700;transition:.12s}
+.tile.lit{background:var(--acc);color:#fff;transform:scale(.94)}
+.tile.ok{background:var(--acc2);color:#fff}
+.msg{text-align:center;min-height:26px;margin-top:10px;font-weight:600}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.sub{text-align:center;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>⏰ WakeUp</h1><button class="ghost" id="test">Test alarm</button></header>
+  <div class="clock"><div class="time" id="time">--:--</div><div class="date" id="date"></div><div class="next" id="next"></div></div>
+
+  <div class="card">
+    <div class="row"><input type="time" id="newTime" value="06:30"><input type="text" id="newLabel" placeholder="Label (e.g. Work, Gym)" style="flex:1;min-width:120px"></div>
+    <div class="days" id="days"></div>
+    <div class="hint" style="margin:0 0 8px">Leave all days unselected to repeat every day.</div>
+    <button class="primary" id="add">+ Add alarm</button>
+  </div>
+
+  <div class="card" id="list"></div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><label>Difficulty</label>
+      <select id="diff"><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></div>
+    <div class="row" style="justify-content:space-between;margin-top:10px"><label>Challenges to complete before the alarm stops</label>
+      <select id="cnt"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+  </div>
+
+  <button class="primary" id="setup" style="display:none">Allow background alarms (do this once)</button>
+  <div class="hint" id="webhint">
+    ⚠️ Keep this page open in your browser for alarms to ring (don’t close the tab; keep the screen on or the phone charging). Tap anywhere once after opening so the browser allows sound. Press “Test alarm” to try it first.
+  </div>
+</div>
+
+<div id="ring"><div class="rin">
+  <div class="big" id="rlabel">Wake up! ⏰</div>
+  <div class="sub" id="rtime"></div>
+  <div class="dots" id="dots"></div>
+  <div id="ch"></div>
+  <div class="msg" id="msg"></div>
+</div></div>
+
+<script>
+const $=s=>document.getElementById(s);
+const DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let S={alarms:[],diff:2,cnt:3,fired:{}};
+try{const r=localStorage.getItem("wakeup");if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem("wakeup",JSON.stringify(S))}catch(e){}try{window.Android&&Android.schedule(JSON.stringify({alarms:S.alarms}))}catch(e){}};
+const fmt=t=>{const [h,m]=t.split(":");const d=new Date();d.setHours(+h,+m,0,0);return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})};
+let selDays=new Set();
+$("days").innerHTML=DN.map((d,i)=>`<button class="day" data-i="${i}">${d}</button>`).join("");
+$("days").onclick=e=>{const b=e.target.closest(".day");if(!b)return;const i=+b.dataset.i;selDays.has(i)?selDays.delete(i):selDays.add(i);b.classList.toggle("on")};
+$("diff").value=S.diff;$("cnt").value=S.cnt;
+$("diff").onchange=()=>{S.diff=+$("diff").value;save()};
+$("cnt").onchange=()=>{S.cnt=+$("cnt").value;save()};
+$("add").onclick=()=>{S.alarms.push({id:Date.now(),time:$("newTime").value||"06:30",label:$("newLabel").value.trim(),on:true,days:[...selDays]});$("newLabel").value="";save();render()};
+$("test").onclick=()=>startRing({label:"Test alarm",time:hm(new Date())});
+
+function render(){
+  const l=$("list");
+  if(!S.alarms.length)l.innerHTML='<div class="empty">No alarms yet. Add one above.</div>';
+  else l.innerHTML=[...S.alarms].sort((a,b)=>a.time.localeCompare(b.time)).map(a=>`
+   <div class="al ${a.on?"":"off"}"><div><div class="t">${fmt(a.time)}</div><div class="m">${esc(a.label)||"Alarm"} · ${a.days.length?[...a.days].sort().map(i=>DN[i]).join(", "):"Every day"}</div></div>
+   <div class="row"><button class="sw ${a.on?"on":""}" data-t="${a.id}" aria-label="Toggle alarm"></button><button class="del" data-d="${a.id}" aria-label="Delete alarm">✕</button></div></div>`).join("");
+  nextInfo();
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("list").onclick=e=>{
+  const t=e.target.closest("[data-t]"),d=e.target.closest("[data-d]");
+  if(t){const a=S.alarms.find(x=>x.id==t.dataset.t);a.on=!a.on;save();render()}
+  if(d){S.alarms=S.alarms.filter(x=>x.id!=d.dataset.d);save();render()}
+};
+const hm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+function nextInfo(){
+  const now=new Date();let best=null;
+  S.alarms.filter(a=>a.on).forEach(a=>{
+    for(let k=0;k<8;k++){const d=new Date(now);d.setDate(d.getDate()+k);const [h,m]=a.time.split(":");d.setHours(+h,+m,0,0);
+      if(d>now&&(!a.days.length||a.days.includes(d.getDay()))){if(!best||d<best)best=d;break}}});
+  if(!best){$("next").textContent="";return}
+  const mins=Math.round((best-now)/60000),h=Math.floor(mins/60),m=mins%60;
+  $("next").textContent="Next alarm in "+(h?h+" h ":"")+m+" min";
+}
+function tick(){
+  const n=new Date();
+  $("time").textContent=n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  $("date").textContent=n.toLocaleDateString([],{weekday:"long",day:"numeric",month:"long"});
+  if(n.getSeconds()===0||!tick.i){nextInfo();tick.i=1}
+  if(ringing||window.Android)return;
+  const key=n.toDateString()+hm(n);
+  S.alarms.forEach(a=>{
+    if(a.on&&a.time===hm(n)&&(!a.days.length||a.days.includes(n.getDay()))&&S.fired[a.id]!==key){S.fired[a.id]=key;save();startRing(a)}});
+}
+setInterval(tick,1000);
+
+let ac,beepT,vibT,ringing=false,beepN=0;
+function unlock(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}}
+addEventListener("pointerdown",unlock);addEventListener("keydown",unlock);
+function beep(){
+  if(!ac)return;beepN++;
+  const base=700+Math.min(beepN,20)*25;
+  [0,.18,.36].forEach((o,i)=>{const t=ac.currentTime+o,os=ac.createOscillator(),g=ac.createGain();
+    os.type="square";os.frequency.value=base+(i%2)*220;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.15);
+    os.connect(g).connect(ac.destination);os.start(t);os.stop(t+.16)});
+}
+function sound(on){if(window.Android){Android.sound(on);return}
+  clearInterval(beepT);clearInterval(vibT);
+  if(on){beepN=0;beep();beepT=setInterval(beep,700);vibT=setInterval(()=>navigator.vibrate&&navigator.vibrate([300,150,300]),1200)}
+  else navigator.vibrate&&navigator.vibrate(0);
+}
+let wl;async function keepAwake(){try{wl=await navigator.wakeLock.request("screen")}catch(e){}}
+keepAwake();document.addEventListener("visibilitychange",()=>{if(!document.hidden)keepAwake()});
+
+let step=0,total=3;
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+function startRing(a){
+  ringing=true;total=S.cnt;step=0;unlock();window.Android&&Android.ring(true);
+  $("rlabel").textContent=(a.label||"Wake up!")+" ⏰";$("rtime").textContent="It’s "+fmt(a.time);
+  $("ring").classList.add("show","pulse");document.title="⏰ Wake up!";
+  sound(true);next();
+}
+function dots(){$("dots").innerHTML=Array.from({length:total},(_,i)=>`<div class="dot ${i<step?"done":i==step?"cur":""}"></div>`).join("")}
+function msg(t,c){const m=$("msg");m.textContent=t;m.style.color=c||"var(--ink)"}
+function next(){
+  if(step>=total)return finish();
+  dots();msg("");
+  const t=["math","mem","order","math2"][rnd(0,3)];
+  ({math:mathCh,math2:mathCh,mem:memCh,order:orderCh})[t](t==="math2");
+}
+function pass(){step++;msg("✅ Nice!","var(--acc2)");setTimeout(next,600)}
+function fail(el,text){el=el||$("ch");el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake");msg(text||"❌ Wrong! Try again","var(--bad)");navigator.vibrate&&navigator.vibrate(200)}
+function finish(){
+  sound(false);ringing=false;window.Android&&Android.ring(false);document.title="WakeUp – Challenge Alarm Clock";
+  $("ring").classList.remove("pulse");
+  $("ch").innerHTML='<div class="q">🌞</div><div class="big" style="color:var(--acc2)">You’re awake! Have a great day.</div>';
+  $("dots").innerHTML="";msg("");
+  setTimeout(()=>$("ring").classList.remove("show"),2200);
+}
+function mathCh(hard){
+  const d=S.diff;let q,ans;
+  const k=hard?rnd(0,2):rnd(0,3);
+  if(k===0){const a=rnd(10*d,40*d+20),b=rnd(10*d,40*d+20);q=`${a} + ${b}`;ans=a+b}
+  else if(k===1){const a=rnd(30*d,90*d+30),b=rnd(10,29*d);q=`${a} − ${b}`;ans=a-b}
+  else if(k===2){const a=rnd(2+d,6+d*3),b=rnd(3,9+d*2);q=`${a} × ${b}`;ans=a*b}
+  else{const b=rnd(2,9),r=rnd(3,10+d*3);q=`${b*r} ÷ ${b}`;ans=r}
+  if(d===3&&k!==3){const c=rnd(2,9);q=`(${q}) + ${c}`;ans+=c}
+  $("ch").innerHTML=`<div class="sub">Solve the math problem</div><div class="q">${q} = ?</div><input class="ans" id="a" type="number" inputmode="numeric" autocomplete="off" placeholder="Answer"><button class="primary" id="ok">Submit</button>`;
+  const inp=$("a");inp.focus();
+  const go=()=>{if(inp.value!==""&&+inp.value===ans)pass();else{inp.value="";fail(inp)}};
+  $("ok").onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()};
+}
+function memCh(){
+  const len=3+S.diff;const seq=Array.from({length:len},()=>rnd(0,8));
+  $("ch").innerHTML=`<div class="sub" id="ms">Remember the pattern…</div><div class="grid" id="g">${Array.from({length:9},(_,i)=>`<button class="tile" data-i="${i}"></button>`).join("")}</div>`;
+  const tiles=[...document.querySelectorAll("#g .tile")];let ok=false,pos=0;
+  const flash=(i,ms=420)=>{tiles[i].classList.add("lit");setTimeout(()=>tiles[i].classList.remove("lit"),ms)};
+  seq.forEach((s,i)=>setTimeout(()=>flash(s),700+i*700));
+  setTimeout(()=>{ok=true;$("ms").textContent="Now tap the same order"},700+len*700);
+  $("g").onclick=e=>{
+    const t=e.target.closest(".tile");if(!t||!ok)return;const i=+t.dataset.i;flash(i,200);
+    if(i===seq[pos]){pos++;if(pos===len){ok=false;pass()}}
+    else{ok=false;fail($("g"),"❌ Wrong order! Watch again");setTimeout(()=>{if(ringing)memCh()},900)}
+  };
+}
+function orderCh(){
+  const nums=shuf([1,2,3,4,5,6,7,8,9]);let n=1;
+  $("ch").innerHTML=`<div class="sub">Tap the numbers from 1 to 9 in order</div><div class="grid" id="g">${nums.map(v=>`<button class="tile" data-v="${v}">${v}</button>`).join("")}</div>`;
+  $("g").onclick=e=>{
+    const t=e.target.closest(".tile");if(!t||t.classList.contains("ok"))return;
+    if(+t.dataset.v===n){t.classList.add("ok");n++;if(n>9)pass()}
+    else{fail($("g"),"❌ Wrong! Start again from 1");n=1;document.querySelectorAll("#g .tile").forEach(x=>x.classList.remove("ok"))}
+  };
+}
+window.nativeRing=()=>{if(ringing)return;try{const p=Android.pending();if(p){const i=p.indexOf("|");startRing({label:p.slice(0,i),time:p.slice(i+1)})}}catch(e){}};
+if(window.Android){$("setup").style.display="block";$("webhint").style.display="none";$("setup").onclick=()=>Android.setup();try{Android.schedule(JSON.stringify({alarms:S.alarms}))}catch(e){}}
+render();tick();
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
